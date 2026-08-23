@@ -22,7 +22,9 @@ app.post('/api/contact', async (req, res) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -30,7 +32,7 @@ app.post('/api/contact', async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: `"Website Contact Form" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
       replyTo: email,
       subject: `New Contact Form Message from ${name}`,
@@ -40,7 +42,7 @@ app.post('/api/contact', async (req, res) => {
     res.json({ success: true, message: 'Message sent successfully!' });
   } catch (error) {
     console.error('Email error:', error);
-    res.status(500).json({ error: 'Failed to send message' });
+    res.status(500).json({ error: error.message });
   }
 });
 
