@@ -9,8 +9,8 @@ async function seed() {
   await Content.deleteMany({});
   await Content.create({
     hero: {
-      badge: '👋 Welcome to my portfolio',
-      title: "Hi, I'm Krishna",
+      badge: '👋 Welcome To The World of Digital Marketing',
+      title: "Hi",
       subtitle: 'Digital Marketing & Web Development Specialist — helping businesses grow online through SEO, SMM, SEM, Meta Ads and modern websites.',
     },
     stats: [
