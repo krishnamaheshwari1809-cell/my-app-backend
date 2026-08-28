@@ -8,6 +8,7 @@ require('dotenv').config();
 
 const Content = require('./models/Content');
 const BlogPost = require('./models/BlogPost');
+const Lead = require('./models/Lead');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -40,11 +41,20 @@ app.get('/api/hello', (req, res) => {
   res.json({ message: 'Backend is working!' });
 });
 
-// ---------- CONTACT FORM ----------
+app.get('/api/admin/verify', checkAdmin, (req, res) => {
+  res.json({ ok: true });
+});
+
+// ---------- CONTACT FORM (also saves as Lead) ----------
 app.post('/api/contact', async (req, res) => {
   const { name, email, message } = req.body;
   if (!name || !email || !message) {
     return res.status(400).json({ error: 'All fields are required' });
+  }
+  try {
+    await Lead.create({ name, email, message });
+  } catch (err) {
+    console.error('Lead save error:', err);
   }
   try {
     await resend.emails.send({
@@ -57,6 +67,25 @@ app.post('/api/contact', async (req, res) => {
     res.json({ success: true, message: 'Message sent successfully!' });
   } catch (error) {
     console.error('Email error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ---------- LEADS ----------
+app.get('/api/leads', checkAdmin, async (req, res) => {
+  try {
+    const leads = await Lead.find().sort({ createdAt: -1 });
+    res.json(leads);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/leads/:id', checkAdmin, async (req, res) => {
+  try {
+    await Lead.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
@@ -108,6 +137,7 @@ app.put('/api/content', checkAdmin, async (req, res) => {
     }
     res.json(content);
   } catch (error) {
+    console.error('Content save error:', error);
     res.status(500).json({ error: error.message });
   }
 });
